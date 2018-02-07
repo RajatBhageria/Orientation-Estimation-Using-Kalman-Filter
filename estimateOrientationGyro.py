@@ -1,6 +1,6 @@
 import numpy as np
 import math
-import transforms3d.quaternions as q
+import transforms3d.quaternions as quat
 
 def estimateOrientationGyro(Wx,Wy,Wz,ts):
 
@@ -26,16 +26,16 @@ def estimateOrientationGyro(Wx,Wy,Wz,ts):
     q1Del = ei*np.sin(alpha/2)
     q2Del = ej*np.sin(alpha/2)
     q3Del = ek*np.sin(alpha/2)
-
     qDelta = np.vstack((q0Del,q1Del,q2Del,q3Del)).T
 
-    #transform the first quaternion to qk+1
-    base = np.array([1,0,0,0]).T
-    q = np.empty(qDelta.shape)
-    print q.qmult(qDelta[0,:], base)
+    qfinal = np.empty(qDelta.shape)
 
-    #qDelta = qDelta[0:qDelta.shape(0)] * qDelta[1:qDelta.shape(0)]
-    for i in range(1,qDelta.shape):
-        q[i,:] = q.qmult(q[i-1,:],qDelta[i])
+    ##transform the first quaternion to qk+1
+    #base = np.array([1,0,0,0]).T
+    #qfinal[0] = quat.qmult(qDelta[0],base)
 
-    print q
+    #for i in range(1,len(qDelta)):
+    #    qfinal[i]= quat.qmult(qfinal[i-1,:],qDelta[i])
+
+    #return qfinal
+    return qDelta
