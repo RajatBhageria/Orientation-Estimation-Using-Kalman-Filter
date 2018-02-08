@@ -47,7 +47,12 @@ def orientationEstimaton():
     for i in range(0, len(Xi)):
         Yi[i, :] = quat.qmult(qDelta,Xi[i,:])
 
-    
+    #get the priori mean and covariance
+    xk = np.mean(Yi,axis=0)
+    Pk = np.cov(Yi)
+
+
+    #remember to normalize quaternions everytime!
 
 
 def axisAngleToQuat(w):
