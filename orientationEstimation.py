@@ -3,11 +3,14 @@ from importData import importData
 import math
 from processModel import processModel
 import transforms3d.quaternions as quat
+import transforms3d
 from measurementModel import measurementModel
+from plotVicom import visualizeResults
 
 def orientationEstimaton():
     #import the data
-    Ax, Ay, Az, Wx, Wy, Wz, ts = importData()
+    filename = "imu/imuRaw1.mat"
+    Ax, Ay, Az, Wx, Wy, Wz, ts = importData(filename)
 
     #intialize the P estimate covariance matrix (3x3)
     Pk_minus = np.zeros((3,3))
@@ -17,6 +20,9 @@ def orientationEstimaton():
 
     #intialize state 
     xk_minus = np.array([1,0,0,0])
+
+    #matrix for final output
+    allEstimates = np.empty((len(Ax),3))
 
     #run the measurement model for each of the pieces of data we have 
     for i in range(0,len(Ax)-1):
@@ -102,7 +108,14 @@ def orientationEstimaton():
         #set the new xk to xk_minus and the new Pk to the Pk_minus
         xk_minus = xk
         Pk_minus = Pk
-        print Pk_minus
+
+        #add to a matrix and return
+        allEstimates[i] = xk_minus
+
+    #visualize the results
+    visualizeResults(allEstimates)
+
+    return allEstimates
 
 def axisAngleToQuat(w):
     wx = w[0]

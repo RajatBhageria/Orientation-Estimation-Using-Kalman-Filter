@@ -2,9 +2,9 @@ from scipy import io
 import math
 import numpy as np
 
-def importData():
+def importData(filename):
     #import IMU data
-    IMU = io.loadmat("imu/imuRaw1.mat")
+    IMU = io.loadmat(filename)
     vals = np.array(IMU["vals"],dtype='double').T
 
     #find the bias data

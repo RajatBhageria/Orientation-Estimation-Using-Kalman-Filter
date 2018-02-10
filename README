@@ -1,3 +1,7 @@
 # Orientation Estimation
-
 The main file to run the program is orientationEstimation
+
+To test:
+* Put the filename into the orientationEstimation file. Make sure that the format of the IMU data is the
+format that was shown in the handout (i.e., Ax, Ay, Az, Wz, Wx, and Wy). Then to run, simply press run orientationEstimation
+
