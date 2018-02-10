@@ -10,7 +10,7 @@ def importData():
     #find the bias data
     bias = vals[0,:]
 
-    #subtract the bias #figure out the correct bias! 
+    #subtract the bias #figure out the correct bias!
     #vals = vals - bias
 
     #scaling factors
@@ -18,6 +18,8 @@ def importData():
     sensitivityAccel = 330
     gyroScale = (3300/1023.0) * (math.pi/180) / sensitivityGyro
     accelScale = (3300/1023.0/sensitivityAccel)
+
+    #vals[:,2] = 9.8*np.ones((vals[:,2].shape))
 
     #import all the data
     times = IMU["ts"]

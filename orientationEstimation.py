@@ -9,7 +9,7 @@ from measurementModel import measurementModel
 def orientationEstimaton():
     #import the data
     Ax, Ay, Az, Wx, Wy, Wz, ts = importData()
-    print np.sqrt(Ax**2 + Ay**2 + Az**2)
+    #print np.sqrt(Ax**2 + Ay**2 + Az**2)
 
     #get the orientation estiamtes from the gyro (3x3)
     #state = x_k-1
@@ -52,19 +52,17 @@ def orientationEstimaton():
         Yi[i, :] = quat.qmult(qDelta,Xi[i,:])
 
     #get the priori mean and covariance
-    #this is not the way you find the mean! you have to say qi = q * error
-    #and then the way you find the cov is: (error in terms of axis angle) and then r*r^T as the cov
-    #since your covariance matrix is always in terms of axis angle
-    xk_minus = np.mean(Yi,axis=0)
-    [n,m] = Xi.shape
-    Pk_minus = 1.0/(2*n)*np.array([Xi-xk_minus])*np.array([Xi-xk_minus]).T
+    [xk_minus,allErrors,averageError] = findQuaternionMean(Xi[0,:],Xi)
+    [n,_] = Xi.shape
+    #6x6 matrix in terms of axis angle r vectors
+    Pk_minus = 1.0/(2*n)*np.dot(np.array(allErrors-averageError),np.array(allErrors-averageError).T)
 
     #THIS IS WHERE THE ENTIRE MEASUREMENT MODEL ENDS! THIS IS WHERE YOU STOP DOING ALL THE MEASUREMENTS.
 
     #apply the measurement model to find Zi
     g = measurementModel(Ax[0],Ay[0],Az[0])
-    # for i in range(0, len(Yi)):
-    #     Yi[i, :] = quat.qmult(quat.qmult(Yi[i,:],g),quat.qinverse(Yi[i, :]))
+    for i in range(0, len(Yi)):
+         Yi[i, :] = quat.qmult(quat.qmult(Yi[i,:],g),quat.qinverse(Yi[i, :]))
 
     Zi = np.nan_to_num(Yi)
 
@@ -91,7 +89,6 @@ def orientationEstimaton():
 
     #remember to normalize quaternions everytime!
 
-
 def axisAngleToQuat(w):
     wx = w[0]
     wy = w[1]
@@ -104,10 +101,22 @@ def axisAngleToQuat(w):
 
     return np.array([math.cos(angle/2),ei*math.sin(angle/2),ej*math.sin(angle/2),ek*math.sin(angle/2)])
 
-
 def quatToAxisAngle(q):
-    return 0
+    [vec, theta] = quat.quat2axangle(q)
+    return theta*vec
 
+#sigma should be a 6x4 input
+def findQuaternionMean(oldMean, sigmas):
+    errors = np.zeros((6,3))
+    for i in range(0, len(sigmas)):
+        currentQ = sigmas[i,:]
+        errorQ = quat.qmult(currentQ,oldMean)
+        vectorError = quatToAxisAngle(errorQ)
+        errors[i,:] = vectorError
+    averageErrorVector = np.mean(errors,axis=0)
+    quatError = axisAngleToQuat(averageErrorVector)
+    newMean = quat.qmult(quatError,oldMean)
+    return newMean, errors, averageErrorVector
 
 if __name__ == "__main__":
     orientationEstimaton()
