@@ -2,7 +2,6 @@ import numpy as np
 from importData import importData
 import math
 from processModel import processModel
-from estimateOrientationGyro import estimateOrientationGyro
 import transforms3d.quaternions as quat
 from measurementModel import measurementModel
 
@@ -77,6 +76,7 @@ def orientationEstimaton():
 
     #find the mean and covariance of Zi
     [zk_minus, allErrorsZ, averageErrorZ] = findQuaternionMean(Zi[0, :], Zi)
+    print allErrorsZ.shape
 
     # 6x6 matrix in terms of axis angle r vectors
     Pzz = 1.0 / (2 * n) * np.dot(np.array(allErrorsZ - averageErrorZ), np.array(allErrorsZ - averageErrorZ).T)
@@ -87,7 +87,7 @@ def orientationEstimaton():
     vk = zk_plus - zk_minusVector
 
     #find the expected covariance
-    R = np.diag(np.ones(6) * 0.5);
+    R = np.diag(np.ones(6) * 0.5)
     Pvv = Pzz + R
 
     #find Pxz, the cross-correlation matrix
