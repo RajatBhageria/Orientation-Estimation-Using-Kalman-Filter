@@ -5,22 +5,19 @@ import numpy as np
 def importData():
     #import IMU data
     IMU = io.loadmat("imu/imuRaw1.mat")
-    vals = np.array(IMU["vals"],dtype='int').T
+    vals = np.array(IMU["vals"],dtype='double').T
 
     #find the bias data
     bias = vals[0,:]
-    #biasGyro =
-    #biasXYAccel = 0
-    #biasZAccel = 0
 
-    #subtract the bias
-    vals = vals - bias
+    #subtract the bias #figure out the correct bias! 
+    #vals = vals - bias
 
     #scaling factors
     sensitivityGyro = 3.33
     sensitivityAccel = 330
-    gyroScale = (3300/1023) * (math.pi/180) / sensitivityGyro
-    accelScale = (3300/1023) * (math.pi/180) / sensitivityAccel
+    gyroScale = (3300/1023.0) * (math.pi/180) / sensitivityGyro
+    accelScale = (3300/1023.0/sensitivityAccel)
 
     #import all the data
     times = IMU["ts"]
