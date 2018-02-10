@@ -55,10 +55,11 @@ def orientationEstimaton():
     Yi = np.nan_to_num(Yi)
 
     #get the priori mean and covariance
-    [xk_minus,allErrorsX,averageErrorX] = findQuaternionMean(Xi[0,:],Xi)
+    [xk_minus_quat,allErrorsX,averageErrorX] = findQuaternionMean(Xi[0,:],Xi)
     [n,_] = Xi.shape
+    xk_minus = quatToAxisAngle(xk_minus_quat)
     #6x6 matrix in terms of axis angle r vectors
-    Pk_minus = 1.0/(2*n)*np.dot(np.array(allErrorsX-averageErrorX),np.array(allErrorsX-averageErrorX).T)
+    Pk_minus = 1.0/(2*n)*np.dot(np.array(allErrorsX-averageErrorX).T,np.array(allErrorsX-averageErrorX))
 
     #THIS IS WHERE THE ENTIRE MEASUREMENT MODEL ENDS! THIS IS WHERE YOU STOP DOING ALL THE MEASUREMENTS.
 
@@ -76,10 +77,9 @@ def orientationEstimaton():
 
     #find the mean and covariance of Zi
     [zk_minus, allErrorsZ, averageErrorZ] = findQuaternionMean(Zi[0, :], Zi)
-    print allErrorsZ.shape
 
     # 6x6 matrix in terms of axis angle r vectors
-    Pzz = 1.0 / (2 * n) * np.dot(np.array(allErrorsZ - averageErrorZ), np.array(allErrorsZ - averageErrorZ).T)
+    Pzz = 1.0 / (2 * n) * np.dot(np.array(allErrorsZ - averageErrorZ).T, np.array(allErrorsZ - averageErrorZ))
 
     #find the innovation vk
     zk_plus = np.array([Ax[0],Ay[0],Az[0]])
@@ -87,18 +87,18 @@ def orientationEstimaton():
     vk = zk_plus - zk_minusVector
 
     #find the expected covariance
-    R = np.diag(np.ones(6) * 0.5)
+    R = np.diag(np.ones(3) * 0.5)
     Pvv = Pzz + R
 
     #find Pxz, the cross-correlation matrix
-    Pxz = 1.0 / (2 * n) * np.dot(np.array(allErrorsX-averageErrorX), np.array(allErrorsZ - averageErrorZ).T)
+    Pxz = 1.0 / (2 * n) * np.dot(np.array(allErrorsX-averageErrorX).T, np.array(allErrorsZ - averageErrorZ))
 
     #find the Kalman gain matix
     Kk = Pxz*np.linalg.inv(Pvv)
 
     #find the posteriori mean, which is the updated estimate of the state
-    xk = xk_minus + Kk*vk
-
+    xk = xk_minus + np.dot(Kk,vk)
+    
     #find the posteriori variation, which is the updated variation 
     Pk = Pk_minus - Kk*Pvv*Kk.T
 
