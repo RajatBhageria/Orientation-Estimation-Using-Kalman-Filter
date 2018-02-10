@@ -8,11 +8,6 @@ from measurementModel import measurementModel
 def orientationEstimaton():
     #import the data
     Ax, Ay, Az, Wx, Wy, Wz, ts = importData()
-    #print np.sqrt(Ax**2 + Ay**2 + Az**2)
-
-    #get the orientation estiamtes from the gyro (3x3)
-    #state = x_k-1
-    #states = estimateOrientationGyro(Wx,Wy,Wz,ts)
 
     #do UKF
     #intialize the P estimate covariance matrix (3x3)
@@ -58,6 +53,7 @@ def orientationEstimaton():
     [xk_minus_quat,allErrorsX,averageErrorX] = findQuaternionMean(Xi[0,:],Xi)
     [n,_] = Xi.shape
     xk_minus = quatToAxisAngle(xk_minus_quat)
+    
     #6x6 matrix in terms of axis angle r vectors
     Pk_minus = 1.0/(2*n)*np.dot(np.array(allErrorsX-averageErrorX).T,np.array(allErrorsX-averageErrorX))
 
@@ -68,9 +64,10 @@ def orientationEstimaton():
     g = measurementModel(Ax[0],Ay[0],Az[0])
     Zi = np.empty((6, 4))
     for i in range(0, len(Yi)):
-        inverse = np.nan_to_num(quat.qinverse(Yi[i, :]))
+        vector = np.nan_to_num(Yi[i, :])
+        inverse = np.nan_to_num(quat.qinverse(vector))
         lastTwo = np.nan_to_num(quat.qmult(g,inverse))
-        newQuat = np.nan_to_num(quat.qmult(Yi[i, :],lastTwo))
+        newQuat = np.nan_to_num(quat.qmult(vector,lastTwo))
         Zi[i, :] = np.nan_to_num(quat.qnorm(newQuat))
     #remove all the nans
     Zi = np.nan_to_num(Zi)
