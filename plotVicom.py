@@ -39,5 +39,5 @@ def visualizeResults(allEstimates):
         yawsEstimates[i] = yawEstimate
 
 
-    plt.plot(ts,rollsTrue,"hello")
+    plt.plot(ts,yawsEstimates)
     plt.show()

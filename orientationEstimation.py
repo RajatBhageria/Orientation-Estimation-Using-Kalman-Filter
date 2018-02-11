@@ -16,7 +16,7 @@ def orientationEstimaton():
     Pk_minus = np.zeros((3,3))
 
     #initialize a Q matrix (3x3)
-    Q = np.diag(np.ones(3) * 5)
+    Q = np.diag(np.ones(3) * .1)
 
     #intialize state 
     xk_minus = np.array([1,0,0,0])
@@ -26,14 +26,14 @@ def orientationEstimaton():
 
     #run the measurement model for each of the pieces of data we have 
     for i in range(0,len(Ax)-1):
-       
+        epsilon = 5
+        c = epsilon*np.eye(3)
+
         #find the S matrix (3x3)
-        S = np.linalg.cholesky(Pk_minus + Q)
+        S = np.linalg.cholesky((2*len(Q))*(Pk_minus + Q + c))
 
         #create the Wi matrix
-        pos = math.sqrt(2*len(Q))*S
-        neg = -1*math.sqrt(2*len(Q))*S
-        Wi = np.hstack((pos,neg)) #3x6
+        Wi = np.hstack((S,-S)) #3x6
 
         #convert W to quaternion representation
         Xi = np.empty((6,4))
@@ -59,12 +59,13 @@ def orientationEstimaton():
         Yi = np.nan_to_num(Yi)
 
         #get the priori mean and covariance
-        [xk_minus_quat,allErrorsX,averageErrorX] = findQuaternionMean(axisAngleToQuat(xk_minus),Xi)
+        [xk_minus_quat,allErrorsX,averageErrorX] = findQuaternionMean(Xi)
         [n,_] = Xi.shape
         xk_minus = quatToAxisAngle(xk_minus_quat)
 
-        #6x6 matrix in terms of axis angle r vectors
+        #3x3 matrix in terms of axis angle r vectors
         Pk_minus = 1.0/(2*n)*np.dot(np.array(allErrorsX-averageErrorX).T,np.array(allErrorsX-averageErrorX))
+        Pk_minus = np.nan_to_num(Pk_minus)
 
         #this is where the update model starts 
         g = measurementModel(Ax[i],Ay[i],Az[i])
@@ -79,31 +80,36 @@ def orientationEstimaton():
         Zi = np.nan_to_num(Zi)
 
         #find the mean and covariance of Zi
-        [zk_minus, allErrorsZ, averageErrorZ] = findQuaternionMean(Zi[0, :], Zi)
+        [zk_minus, allErrorsZ, averageErrorZ] = findQuaternionMean(Zi)
 
         # 6x6 matrix in terms of axis angle r vectors
         Pzz = 1.0 / (2 * n) * np.dot(np.array(allErrorsZ - averageErrorZ).T, np.array(allErrorsZ - averageErrorZ))
 
         #find the innovation vk
-        zk_plus = np.array([Ax[0],Ay[0],Az[0]])
+        zk_plus = np.array([Ax[i],Ay[i],Az[i]])
         zk_minusVector = quatToAxisAngle(zk_minus)
         vk = zk_plus - zk_minusVector
 
         #find the expected covariance
         R = np.diag(np.ones(3) * 0.5)
         Pvv = Pzz + R
+        Pvv = np.nan_to_num(Pvv)
 
         #find Pxz, the cross-correlation matrix
         Pxz = 1.0 / (2 * n) * np.dot(np.array(allErrorsX-averageErrorX).T, np.array(allErrorsZ - averageErrorZ))
+        Pxz = np.nan_to_num(Pxz)
 
         #find the Kalman gain matix
         Kk = Pxz*np.linalg.inv(Pvv)
+        Kk = np.nan_to_num(Kk)
 
         #find the posteriori mean, which is the updated estimate of the state
         xk = xk_minus + np.dot(Kk,vk)
+        xk = np.nan_to_num(xk)
 
         #find the posteriori variation, which is the updated variation
         Pk = Pk_minus - Kk*Pvv*Kk.T
+        Pk = np.nan_to_num(Pk)
 
         #set the new xk to xk_minus and the new Pk to the Pk_minus
         xk_minus = xk
@@ -134,9 +140,10 @@ def quatToAxisAngle(q):
     return theta*vec
 
 #sigma should be a 6x4 input
-def findQuaternionMean(oldMean, sigmas):
+def findQuaternionMean(sigmas):
     errors = np.zeros((6,3))
-    for i in range(0, len(sigmas)):
+    oldMean = sigmas[0,:]
+    for i in range(1, len(sigmas)):
         currentQ = sigmas[i,:]
         errorQ = quat.qmult(currentQ,oldMean)
         vectorError = quatToAxisAngle(errorQ)

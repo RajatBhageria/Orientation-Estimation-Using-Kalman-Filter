@@ -9,7 +9,7 @@ def processModel(Wx,Wy,Wz,deltaT):
 
     #remove nan
     if(absW==0):
-        absW = 1E-6
+        absW = 1E-20
 
     #find alpha, the angle in axis-angle orientation
     alpha = absW*deltaT
