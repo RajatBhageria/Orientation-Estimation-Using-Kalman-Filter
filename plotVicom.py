@@ -24,7 +24,7 @@ def visualizeResults(allEstimates):
     for i in range(0,n):
         #ground truth euler angles
         rot = rots[:, :, i]
-        [rollTrue, pitchTrue, yawTrue] = transforms3d.euler.mat2euler(rot,"szyx")  #roll, pitch, yaw
+        [yawTrue, pitchTrue, rollTrue] = transforms3d.euler.mat2euler(rot,"szyx")  #roll, pitch, yaw
         rollsTrue[i] = rollTrue
         pitchesTrue[i] = pitchTrue
         yawsTrue[i] = yawTrue
@@ -33,11 +33,19 @@ def visualizeResults(allEstimates):
         axAngleEstimated = allEstimates[i,:]
         theta = np.linalg.norm(axAngleEstimated)
         axis = axAngleEstimated/theta
-        [rollEstimate, pitchEstimate, yawEstimate] = transforms3d.euler.axangle2euler(axis, theta, "szyx")  # roll, pitch, yaw
+        [yawEstimate, pitchEstimate, rollEstimate] = transforms3d.euler.axangle2euler(axis, theta, "szyx")  # roll, pitch, yaw
         rollsEstimates[i] = rollEstimate
         pitchesEstimates[i] = pitchEstimate
         yawsEstimates[i] = yawEstimate
 
-
-    plt.plot(ts,yawsEstimates)
+    f, (ax1, ax2, ax3) = plt.subplots(3, sharex=True, sharey=True)
+    ax1.plot(ts,rollsEstimates)
+    ax1.plot(ts,rollsTrue)
+    ax1.legend(['Rolls Estimates','Rolls Ground Truth'], loc='upper left')
+    ax2.plot(ts,pitchesEstimates)
+    ax2.plot(ts,pitchesTrue)
+    ax2.legend(['Pitches Estimates','Pitches Ground Truth'], loc='upper left')
+    ax3.plot(ts,yawsEstimates)
+    ax3.plot(ts,yawsTrue)
+    ax3.legend(['Yaw Estimates','Yaw Ground Truth'], loc='upper left')
     plt.show()

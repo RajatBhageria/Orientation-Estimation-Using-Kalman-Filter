@@ -3,7 +3,6 @@ from importData import importData
 import math
 from processModel import processModel
 import transforms3d.quaternions as quat
-import transforms3d
 from measurementModel import measurementModel
 from plotVicom import visualizeResults
 
@@ -72,7 +71,10 @@ def orientationEstimaton():
         Zi = np.empty((6, 4))
         for j in range(0, len(Yi)):
             vector = np.nan_to_num(Yi[j, :])
-            inverse = np.nan_to_num(quat.qinverse(vector))
+            if (np.array_equal(vector,np.array([0,0,0,0]))):
+                inverse = vector
+            else:
+                inverse = np.nan_to_num(quat.qinverse(vector))
             lastTwo = np.nan_to_num(quat.qmult(g,inverse))
             newQuat = np.nan_to_num(quat.qmult(vector,lastTwo))
             Zi[j, :] = np.nan_to_num(quat.qnorm(newQuat))
@@ -91,7 +93,7 @@ def orientationEstimaton():
         vk = zk_plus - zk_minusVector
 
         #find the expected covariance
-        R = np.diag(np.ones(3) * 0.5)
+        R = np.diag(np.ones(3) * .3)
         Pvv = Pzz + R
         Pvv = np.nan_to_num(Pvv)
 
@@ -129,9 +131,14 @@ def axisAngleToQuat(w):
     wz = w[2]
 
     angle = np.linalg.norm(w)
-    ei = wx/angle
-    ej = wy/angle
-    ek = wz/angle
+    if angle == 0:
+        ei = 0
+        ej = 0
+        ek = 0
+    else:
+        ei = wx/angle
+        ej = wy/angle
+        ek = wz/angle
 
     return np.array([math.cos(angle/2),ei*math.sin(angle/2),ej*math.sin(angle/2),ek*math.sin(angle/2)])
 

@@ -11,7 +11,8 @@ def importData(filename):
     bias = vals[0,:]
 
     #subtract the bias #figure out the correct bias!
-    #vals = vals - bias
+    #vals[:,0:4] = vals[:,0:4]-bias[0:4]
+    #vals[:,5] = 9.8
 
     #scaling factors
     sensitivityGyro = 3.33
@@ -23,8 +24,8 @@ def importData(filename):
 
     #import all the data
     times = IMU["ts"]
-    Ax = vals[:,0] * accelScale
-    Ay = vals[:,1] * accelScale
+    Ax = -vals[:,0] * accelScale
+    Ay = -vals[:,1] * accelScale
     Az = vals[:,2] * accelScale
     Wz = vals[:,3] * gyroScale
     Wx = vals[:,4] * gyroScale
