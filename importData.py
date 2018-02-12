@@ -11,16 +11,14 @@ def importData(filename):
     bias = vals[0,:]
 
     #subtract the bias #figure out the correct bias!
-    #vals[:,0:4] = vals[:,0:4]-bias[0:4]
-    #vals[:,5] = 9.8
+    vals[:,0:2] = vals[:,0:2]-bias[0:2]
+    vals[:,3:6] = vals[:,3:6]-bias[3:6]
 
     #scaling factors
     sensitivityGyro = 3.33
     sensitivityAccel = 330
     gyroScale = (3300/1023.0) * (math.pi/180) / sensitivityGyro
     accelScale = (3300/1023.0/sensitivityAccel)
-
-    #vals[:,2] = 9.8*np.ones((vals[:,2].shape))
 
     #import all the data
     times = IMU["ts"]
@@ -30,6 +28,10 @@ def importData(filename):
     Wz = vals[:,3] * gyroScale
     Wx = vals[:,4] * gyroScale
     Wy = vals[:,5] * gyroScale
+
+    #edit the yaw Az
+    firstAz = Az[0]
+    Az = Az - firstAz + 9.8
 
     return Ax, Ay, Az, Wx, Wy, Wz, times.T
 
