@@ -5,6 +5,8 @@ from processModel import processModel
 import transforms3d.quaternions as quat
 from measurementModel import measurementModel
 from plotVicom import visualizeResults
+import transforms3d
+from createPanorama import createPanorama
 
 def orientationEstimaton():
     #import the data
@@ -127,7 +129,32 @@ def orientationEstimaton():
     #visualize the results
     visualizeResults(allEstimates,viconFileName)
 
+    #create the panorama using my own data
+    rotsInMatrix = np.empty((3,3,len(allEstimates)))
+    for est in range(0,len(allEstimates)):
+        rot = axisAngletoMat(allEstimates[est])
+        rotsInMatrix[:,:,est] = rot
+    createPanorama(rotsInMatrix, ts)
+
     return allEstimates
+
+def axisAngletoMat(v):
+    vx = v[0]
+    vy = v[1]
+    vz = v[2]
+    angle = np.linalg.norm(v)
+    
+    if angle == 0:
+        ei = 0
+        ej = 0
+        ek = 0
+    else:
+        ei = vx/angle
+        ej = vy/angle
+        ek = vz/angle
+
+    mat = transforms3d.axangles.axangle2mat(np.array([vx,vy,vz]),angle)
+    return mat 
 
 def axisAngleToQuat(w):
     wx = w[0]

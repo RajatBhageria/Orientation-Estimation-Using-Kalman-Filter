@@ -29,7 +29,7 @@ def createPanorama(rotations, rotationTimes):
         for row in range(0,numRows):
             for col in range(0,numCols):
                 #convert to spherical coordiantes
-                theta = row*(math.pi/3)/numRows-math.pi/8 #height #theta #altitude
+                theta = row*(math.pi/3)/numRows#-math.pi/8 #height #theta #altitude
                 phi = col*(math.pi/4)/numCols#+math.pi#-math.pi/8 #width/horizontal distance #phi #azimuth
                 r = 1
                 sphericalCoords[pixelNum] = np.array([r,theta,phi])
@@ -99,12 +99,14 @@ def createPanorama(rotations, rotationTimes):
 
             newImg[newRow,newCol] = pixelIntensity
 
-    #display the new image
+        # display the new image
     newImg = np.fliplr(newImg)
     plt.imshow(newImg)
     plt.show()
 
 if __name__ == "__main__":
+    #note that if you just play this file, it'll use the vicon data.
+    #but if you run the orientationEstimation file, it'll use my own estimates
     vicon = io.loadmat("vicon/viconRot1.mat")
     rots = np.array(vicon["rots"])
     ts = np.array(vicon["ts"]).T

@@ -3,7 +3,11 @@ The main file to run the program is orientationEstimation
 
 To test generation of the rotations:
 * Put the filename into the orientationEstimation file. Make sure that the format of the IMU data is the
-format that was shown in the handout (i.e., Ax, Ay, Az, Wz, Wx, and Wy). Then to run, simply press run orientationEstimation
+format that was shown in the handout (i.e., Ax, Ay, Az, Wz, Wx, and Wy). Then to run, simply press run orientationEstimation.
 
-To test the generation of the panorama
-* simply run createPanorama
+The orientationEstimation will bring up the diagram of the difference between the expected and the actual Euler Angles.
+Of course since I'm using Method 2 (using only quaternion as the state vector) and so the Yaw estimation doesn't work well.
+
+Then, this same function will use my estimations of the rotation matricies in order to generate the panorama.
+
+If you want to use the vicon data to create the panorama, simply run the plotVicon directly.
