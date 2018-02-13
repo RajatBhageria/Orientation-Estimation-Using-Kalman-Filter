@@ -25,7 +25,7 @@ def orientationEstimaton():
 
     #run the measurement model for each of the pieces of data we have 
     for i in range(0,len(Ax)-1):
-        epsilon = 5
+        epsilon = 3
         c = epsilon*np.eye(3)
 
         #find the S matrix (3x3)

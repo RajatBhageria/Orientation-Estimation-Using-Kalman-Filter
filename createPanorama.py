@@ -1,7 +1,8 @@
 from scipy import io
 import math
 import numpy as np
-import transforms3d
+import matplotlib.pyplot as plt
+
 
 def createPanorama(rotations, rotationTimes):
     #import the camera data
@@ -12,6 +13,8 @@ def createPanorama(rotations, rotationTimes):
     #n = num rows, m = num columns, and k = num images
     [_,_,_,k] = images.shape
 
+    newImg = np.empty((240 * 2, 320 * 2, 3))
+
     for imageNum in range(0,k):
         image = images[:,:,:,imageNum]
         [numRows,numCols,_] = image.shape
@@ -19,15 +22,26 @@ def createPanorama(rotations, rotationTimes):
         #1) project pixel coordinate to a unit sphere in spherical coordiantes
         sphericalCoords = np.empty((numCols*numRows,3)) #r, theta, phi
         pixelNum = 0
+
+        #get the actual pixel values to do the transformation
+        pixelValues = np.empty((numRows*numCols,3))
+
+
         for row in range(0,numRows):
             for col in range(0,numCols):
+                #convert to spherical coordiantes
                 theta = row*(math.pi/3)/numRows-math.pi/8 #height #theta #altitude
                 phi = col*(math.pi/4)/numCols-math.pi/8 #width/horizontal distance #phi #azimuth
                 r = 1
                 sphericalCoords[pixelNum] = np.array([r,theta,phi])
+
+                #get the actual pixels
+                pixelValues[pixelNum] = image[row,col,:]
+
+                #increase the counter
                 pixelNum = pixelNum+1
 
-        #convert the spherical coordinates to carteesian coordiantes
+        #convert the spherical coordinates to pcarteesian coordiantes
         #[azimuth, altitude, r]
         rs = sphericalCoords[:,0]
         thetas = sphericalCoords[:,1]
@@ -65,19 +79,33 @@ def createPanorama(rotations, rotationTimes):
         rs = np.sqrt(xs**2+ys**2+zs**2).T
         thetas = np.arctan(ys/xs).T
         phis = np.arctan(np.sqrt(xs**2+ys**2)/zs).T
-        #rotatedSpherical = np.vstack((rs,thetas,phis))
 
-        #project spherical coordinates onto a plane
+        #project spherical coordinates onto to a xy plane
         ysForPlane = thetas
         xsForPlane = phis
-        zsForPlane = rs
+
+        #scale the coordinates to an image
+        ysForPlane = np.array(ysForPlane*numRows).astype(int)
+        xsForPlane = np.array(xsForPlane*numCols).astype(int)
+
+        #add the bias
+        ysForPlane = ysForPlane + 98
 
         #Paint the pixels onto the image
+        for pixel in range(0,numCols*numRows):
+            newRow = ysForPlane[pixel]
+            newCol = xsForPlane[pixel]
 
+            pixelIntensity = pixelValues[pixel]
+
+            newImg[newRow,newCol] = pixelIntensity
+
+    #display the new image
+    plt.imshow(newImg)
+    plt.show()
 
 if __name__ == "__main__":
     vicon = io.loadmat("vicon/viconRot1.mat")
     rots = np.array(vicon["rots"])
     ts = np.array(vicon["ts"]).T
-
     createPanorama(rots,ts)
