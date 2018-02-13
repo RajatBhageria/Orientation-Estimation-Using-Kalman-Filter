@@ -9,11 +9,15 @@ from plotVicom import visualizeResults
 def orientationEstimaton():
     #import the data
     filename = "imu/imuRaw1.mat"
+    viconFileName = "vicon/viconRot1.mat"
     Ax, Ay, Az, Wx, Wy, Wz, ts = importData(filename)
 
     #intialize the P estimate covariance matrix (3x3)
     Pk_minus = np.zeros((3,3))
-
+    Pk_minus[0,0] = 0.277
+    Pk_minus[1,1] = 0.277
+    Pk_minus[2,2] = 0.4
+    
     #initialize a Q matrix (3x3)
     Q = np.diag(np.ones(3) * .1)
 
@@ -25,7 +29,7 @@ def orientationEstimaton():
 
     #run the measurement model for each of the pieces of data we have 
     for i in range(0,len(Ax)-1):
-        epsilon = 3
+        epsilon = 5
         c = epsilon*np.eye(3)
 
         #find the S matrix (3x3)
@@ -93,7 +97,7 @@ def orientationEstimaton():
         vk = zk_plus - zk_minusVector
 
         #find the expected covariance
-        R = np.diag(np.ones(3) * .3)
+        R = np.diag(np.ones(3) * .40)
         Pvv = Pzz + R
         Pvv = np.nan_to_num(Pvv)
 
@@ -121,7 +125,7 @@ def orientationEstimaton():
         allEstimates[i] = xk_minus
 
     #visualize the results
-    visualizeResults(allEstimates)
+    visualizeResults(allEstimates,viconFileName)
 
     return allEstimates
 

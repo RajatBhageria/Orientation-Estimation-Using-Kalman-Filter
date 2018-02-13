@@ -22,16 +22,16 @@ def importData(filename):
 
     #import all the data
     times = IMU["ts"]
-    Ax = -vals[:,0] * accelScale
-    Ay = -vals[:,1] * accelScale
+    Ax = vals[:,0] * accelScale
+    Ay = vals[:,1] * accelScale
     Az = vals[:,2] * accelScale
     Wz = vals[:,3] * gyroScale
     Wx = vals[:,4] * gyroScale
     Wy = vals[:,5] * gyroScale
 
-    #edit the yaw Az
+    #edit the Az to be 1g
     firstAz = np.mean(Az[0:30])
-    Az = Az - firstAz + 9.8
+    Az = Az - firstAz + 1
 
     return Ax, Ay, Az, Wx, Wy, Wz, times.T
 

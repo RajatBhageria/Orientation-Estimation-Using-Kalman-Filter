@@ -4,11 +4,10 @@ from rotplot import rotplot
 import matplotlib.pyplot as plt
 import transforms3d
 
-
-def visualizeResults(allEstimates):
+def visualizeResults(allEstimates,viconFileName):
 
     #load the vicon ground truth
-    vicon = io.loadmat("vicon/viconRot1.mat")
+    vicon = io.loadmat(viconFileName)
 
     rots = np.array(vicon["rots"])
     ts = np.array(vicon["ts"]).T

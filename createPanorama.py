@@ -15,7 +15,7 @@ def createPanorama(rotations, rotationTimes):
 
     newImg = np.empty((240 * 2, 320 * 2, 3))
 
-    for imageNum in range(0,k):
+    for imageNum in range(0,k,15):
         image = images[:,:,:,imageNum]
         [numRows,numCols,_] = image.shape
 
@@ -26,12 +26,11 @@ def createPanorama(rotations, rotationTimes):
         #get the actual pixel values to do the transformation
         pixelValues = np.empty((numRows*numCols,3))
 
-
         for row in range(0,numRows):
             for col in range(0,numCols):
                 #convert to spherical coordiantes
                 theta = row*(math.pi/3)/numRows-math.pi/8 #height #theta #altitude
-                phi = col*(math.pi/4)/numCols-math.pi/8 #width/horizontal distance #phi #azimuth
+                phi = col*(math.pi/4)/numCols#+math.pi#-math.pi/8 #width/horizontal distance #phi #azimuth
                 r = 1
                 sphericalCoords[pixelNum] = np.array([r,theta,phi])
 
@@ -101,6 +100,7 @@ def createPanorama(rotations, rotationTimes):
             newImg[newRow,newCol] = pixelIntensity
 
     #display the new image
+    newImg = np.fliplr(newImg)
     plt.imshow(newImg)
     plt.show()
 
